@@ -4,7 +4,13 @@ import React, { useState } from 'react';
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Phone, Zap, BatteryMedium, Sun, Cpu, CheckCircle, Receipt } from 'lucide-react';
 import { useForm } from 'react-hook-form';
+
+// --- PAYSTACK IMPORT ---
 // import { usePaystackPayment } from 'react-paystack';
+
+// --- FIREBASE IMPORTS ---
+// import { db } from '../firebase/config';
+// import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 
 interface Appliance {
   id: number;
@@ -85,45 +91,48 @@ export default function NairaSolar() {
   };
 
   // Paystack Integration
-  const config = {
-    reference: (new Date()).getTime().toString(),
-    email: "customer@nairasolar.com",
-    amount: 3000 * 100, 
-    publicKey: PAYSTACK_PUBLIC_KEY,
-    metadata: {
-      custom_fields: [{ display_name: "Phone Number", variable_name: "phone", value: phoneInput }]
-    }
-  };
+  // const config = {
+  //   reference: (new Date()).getTime().toString(),
+  //   email: "customer@nairasolar.com",
+  //   amount: 3000 * 100, 
+  //   publicKey: PAYSTACK_PUBLIC_KEY,
+  //   metadata: {
+  //     custom_fields: [{ display_name: "Phone Number", variable_name: "phone", value: phoneInput }]
+  //   }
+  // };
 
+  // Initialize Paystack hook
   // const initializePayment = usePaystackPayment(config);
 
   const onSubmitLead = async (data: any) => {
     try {
       // 1. Save the lead to Firebase Firestore
-      const docRef = await addDoc(collection(db, "leads"), {
-        phone: data.phone,
-        batteryType: batteryType,
-        dailyLoadKwh: totalDailyEnergyKwh,
-        totalEstimatedCost: totalCost,
-        paymentStatus: "PENDING", // You can update this to PAID later if Paystack succeeds
-        createdAt: serverTimestamp(),
-      });
+      // const docRef = await addDoc(collection(db, "leads"), {
+      //   phone: data.phone,
+      //   batteryType: batteryType,
+      //   dailyLoadKwh: totalDailyEnergyKwh,
+      //   totalEstimatedCost: totalCost,
+      //   paymentStatus: "PENDING", 
+      //   createdAt: serverTimestamp(),
+      // });
       
-      console.log("Lead successfully saved with ID: ", docRef.id);
+      // console.log("Lead successfully saved with ID: ", docRef.id);
 
       // 2. Open Paystack to collect the ₦3,000 fee
-      initializePayment({
-          onSuccess: (reference) => {
-            setPaymentSuccess(true);
-            // Pro-tip: Here is where you would ideally write another function 
-            // to update the Firebase document from PENDING to PAID.
-          },
-          onClose: () => alert("Payment window closed. The installer will not be notified until payment is complete.")
-      });
+      // initializePayment({
+      //     onSuccess: (reference) => {
+      //       setPaymentSuccess(true);
+      //       // Future feature: Update Firebase document from PENDING to PAID here.
+      //     },
+      //     onClose: () => alert("Payment window closed. The installer will not be notified until payment is complete.")
+      // });
+
+      setPaymentSuccess(true);
+      alert("Lead submitted successfully! (Payment simulated)");
 
     } catch (error) {
       console.error("Error saving lead: ", error);
-      alert("Failed to connect. Please check your internet and try again.");
+      alert("Failed to connect to the database. Please check your internet and try again.");
     }
   };
 
@@ -200,7 +209,7 @@ export default function NairaSolar() {
                       <Pie data={chartData} cx="50%" cy="50%" innerRadius={60} outerRadius={85} paddingAngle={2} dataKey="value">
                         {chartData.map((entry, index) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />)}
                       </Pie>
-                      <Tooltip formatter={(value: number) => [`${value} kWh`, 'Daily Energy']} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}/>
+                      <Tooltip formatter={(value) => value !== undefined ? [`${value} kWh`, 'Daily Energy'] : ['0 kWh', 'Daily Energy']} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}/>
                       <Legend verticalAlign="bottom" height={36} iconType="circle"/>
                     </PieChart>
                   </ResponsiveContainer>
